@@ -1,0 +1,7 @@
+.DS_Store
+__pycache__/
+*.pt
+runs/
+images/
+labels/
+.ipynb_checkpoints/

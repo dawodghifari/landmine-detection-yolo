@@ -1,0 +1,8 @@
+# YOLOv11 dataset config — landmine detection
+nc: 1
+names: ['landmine']
+
+# point these at your local copy of the dataset (see README for source)
+train: 'images/train'
+val:   'images/val'
+test:  'images/test'
