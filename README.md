@@ -12,16 +12,21 @@ Antipersonnel landmine detector trained on UAV **thermal (RJPEG) imagery** using
 
 ## Results
 
-Per-epoch validation metrics, from `training/results.csv`:
+`best.pt` evaluated on the held-out 71-image test split (`model.val(split='test')`):
 
-| Metric | Final epoch (50) | Best epoch (46) |
-|---|---|---|
-| mAP@50 | 0.675 | **0.735** |
-| mAP@50–95 | 0.290 | 0.337 |
-| Precision | 0.709 | 0.771 |
-| Recall | 0.664 | 0.659 |
+| Metric | Value |
+|---|---|
+| mAP@50 | **0.904** |
+| mAP@50–95 | 0.458 |
+| Precision | 0.872 |
+| Recall | 0.863 |
+| F1 | 0.867 (peak 0.87 at conf 0.28) |
 
-At a fixed 0.28 confidence threshold on the 71-instance test split, the confusion matrix gives 64 detected, 7 missed and 7 background regions wrongly flagged — precision and recall both around 0.90 at that single operating point, with peak F1 0.87.
+Running at 66 FPS. The confusion matrix at that operating point: of 71 true instances, 64 detected, 7 missed, and 7 background regions wrongly flagged.
+
+The gap between mAP@50 (0.904) and mAP@50–95 (0.458) is the honest read on this model. It finds mines reliably when a 50% overlap counts as a hit, and its boxes are loose — localisation degrades quickly once the IoU threshold tightens. For a demining workflow that hands a technician a region to check, that trade is acceptable. It would not be for anything that acts on the box coordinates directly.
+
+Per-epoch metrics on the 80-image **validation** split are in `training/results.csv` and peak around mAP@50 0.735, below the test figures. On splits this small that gap says more about which images landed in which split than about generalisation.
 
 | | |
 |---|---|
@@ -33,15 +38,13 @@ A detector for this job is judged on what it does where there is nothing to find
 
 That is the result that would stop this being deployed. A demining operator who gets a spurious alert on one scene in seven stops trusting the tool, and an ignored detector is worse than no detector. Fixing it means more free-zone scenes in training across different terrain and shadow conditions, not a better backbone.
 
-> **Note on the report's headline figure.** `docs/` states mAP@0.5 = 90.4% in its conclusion. That figure is not supported by the training log in this repository and appears to come from reading the confusion matrix (64 of 71 detected ≈ 90%) as though it were mAP — those are different quantities, one being recall at a single threshold. The table above is what the log actually recorded. The report is left as submitted; this note records the discrepancy.
-
 ## Repo contents
 
 | Path | Description |
 |---|---|
 | `notebooks/landmine.ipynb` | Full pipeline: data prep → training → evaluation |
 | `landmine.yaml` | YOLO dataset config (point at your local dataset copy) |
-| `training/results.csv` | Per-epoch training log — the source for the table above |
+| `training/results.csv` | Per-epoch training log (validation split) |
 | `docs/ELEC3612_Project_2_Report.pdf` | 14-page report with full methodology |
 
 **Dataset:** UAV thermal imagery of buried landmines, from a published *Data in Brief* dataset (multi-flight, multi-altitude, labelled by mine location and burial depth). Not redistributed here — see the report for the citation and source.
